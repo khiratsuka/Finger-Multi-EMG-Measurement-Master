@@ -11,8 +11,8 @@ DATASET_FOLDER = 'dataset'
 
 #測定に関わる定数
 CH_NUM = 8
-MAX_DATA_LENGTH = 8500
+MAX_DATA_LENGTH = 4100
 DATA_MEASURING_SEC = 2
 
 #デバッグの有無
-DEBUG = True
+DEBUG = False

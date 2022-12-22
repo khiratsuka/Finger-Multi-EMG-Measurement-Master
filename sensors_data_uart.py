@@ -23,11 +23,10 @@ def sendStartCode(ser, start_code):
 
 def main():
     #受信データ格納用
-    upper2hex = [[], [], [], [], [], [], [], []]
-    lower2hex = [[], [], [], [], [], [], [], []]
     upper2dec = [[], [], [], [], [], [], [], []]
     lower2dec = [[], [], [], [], [], [], [], []]
     recv_pariry = []
+    calc_parity = []
     footer = []
 
     #パリティ計算用
@@ -47,8 +46,9 @@ def main():
     #どの指のデータにするか選択する
     while True:
         print('< thumb:0, index:1, middle:2, ring:3, pinkie:4 >')
-        id_num_str = input('ID > ')
-        id_num = int(id_num_str)
+        #id_num_str = input('ID > ')
+        #id_num = int(id_num_str)
+        id_num = 4
         if id_num > 4 or id_num < 0:
             print('ERROR: input numv is out of index')
         else:
@@ -60,7 +60,7 @@ def main():
         #UART通信の初期設定
         #接続時に"ls /dev/tty.usb*"でポート番号をチェックする
         ser = serial.Serial(
-            port = "/dev/tty.usbmodem11203",
+            port = "/dev/tty.usbmodem11403",
             baudrate = 470588,
         )
 
@@ -75,6 +75,9 @@ def main():
                 break
 
             if ser.in_waiting > 0:
+                #計算したパリティ用
+                calc_parity_temp = 0
+
                 #先頭データを受信した時間を記録
                 if first_receive:
                     print('< start measurement >')
@@ -83,51 +86,47 @@ def main():
                 
                 #データを受信
                 recv_data = ser.read(1)
-                recv_data_val = struct.unpack_from("B",recv_data ,0)[0]
-                
+                recv_data_val = struct.unpack_from("B", recv_data ,0)[0]
+
                 #データのヘッダを検知
                 if recv_data_val == 254:
                     #データの個数を取得、バイナリから変換
                     data_num = ser.read(1)
-                    data_num = struct.unpack_from("B",data_num ,0)[0]
+                    data_num = struct.unpack_from("B", data_num ,0)[0]
 
-                    #データの取得
+                    #データの取得とパリティの準備
                     for i in range(data_num - 1):
-                        upper2hex[i].append(ser.read(1))
-                        lower2hex[i].append(ser.read(1))
-                    
+                        upper_temp = ser.read(1)
+                        lower_temp = ser.read(1)
+                        upper_temp_val = struct.unpack_from("B", upper_temp, 0)[0]
+                        lower_temp_val = struct.unpack_from("B", lower_temp, 0)[0]
+                        upper2dec[i].append(upper_temp_val)
+                        lower2dec[i].append(lower_temp_val)
+                        calc_parity_temp = calc_parity_temp + upper_temp_val + lower_temp_val
+                    calc_parity.append(calc_parity_temp & pickupParity)
+
                     #パリティの取得
-                    recv_pariry.append(ser.read(1))
+                    recv_parity_temp = ser.read(1)
+                    recv_parity_temp = struct.unpack_from("B", recv_parity_temp, 0)[0]
+                    recv_pariry.append(recv_parity_temp)
                     
                     #フッタの取得
-                    footer.append(ser.read(1))
+                    footer_temp = ser.read(1)
+                    footer_temp = struct.unpack_from("B", footer_temp, 0)[0]
+                    footer.append(footer_temp)
     
     #デバッグ時
     if DEBUG:
         upper2hex, lower2hex, recv_pariry, footer= recv_test_data.test()
-
-    #受信データをバイナリから数値へ変換
-    for i in range(len(upper2hex)):
-        for upper_hex_data in upper2hex[i]:
-            upper2dec[i].append(struct.unpack_from("B",upper_hex_data ,0)[0])
-        for lower_hex_data in lower2hex[i]:
-            lower2dec[i].append(struct.unpack_from("B",lower_hex_data ,0)[0])
-    for i in range(len(footer)):
-        recv_pariry[i] = struct.unpack_from("B",recv_pariry[i] ,0)[0]
-        footer[i]      = struct.unpack_from("B",footer[i] ,0)[0]
     
     #パリティを計算
     for i in range(len(footer)):
-        parity = 0
-        for j in range(len(upper2dec)):
-            parity = parity + upper2dec[j][i] + lower2dec[j][i]
-        parity = parity & pickupParity
-        
         #パリティが違っていればエラーデータとしてデータを全て捨てる
-        if(parity != recv_pariry[i] or footer[i] != 255):
+        if(calc_parity[i] != recv_pariry[i] or footer[i] != 255):
             print('ERROR: broken data\n')
             return -1
-    
+
+
     #データを復元してリストへ追加
     for i in range(len(upper2dec)):
         for j in range(len(upper2dec[i])):
