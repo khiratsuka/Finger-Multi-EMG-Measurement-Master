@@ -45,11 +45,10 @@ def main():
 
     #どの指のデータにするか選択する
     while True:
-        print('< thumb:0, index:1, middle:2, ring:3, pinkie:4 >')
-        #id_num_str = input('ID > ')
-        #id_num = int(id_num_str)
-        id_num = 4
-        if id_num > 4 or id_num < 0:
+        print(LABEL_NAMES_DICT)
+        id_num_str = input('ID > ')
+        id_num = int(id_num_str)
+        if id_num >= len(LABEL_NAMES) or id_num < 0:
             print('ERROR: input numv is out of index')
         else:
             print('select label is [{}]'.format(LABEL_NAMES[id_num]))
@@ -80,6 +79,7 @@ def main():
 
                 #先頭データを受信した時間を記録
                 if first_receive:
+                    os.system('tput bel')
                     print('< start measurement >')
                     first_receive = False
                     start_time = time.perf_counter()
