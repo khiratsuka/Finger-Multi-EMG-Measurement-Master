@@ -1,5 +1,7 @@
 import struct
+
 import numpy as np
+
 
 def test():
     pickupParity = 0x00FF
@@ -13,8 +15,8 @@ def test():
 
     for i in range(len(upper2hex)):
         for j in range(wave_length):
-            #up2 = j + (i+1)*10
-            #low2 = j + (i+2)*10
+            # up2 = j + (i+1)*10
+            # low2 = j + (i+2)*10
             up2 = 55
             low2 = 88
             upper2dec[i].append(up2)
@@ -30,12 +32,12 @@ def test():
         p = p & pickupParity
         parity.append(struct.pack("B", p))
         footer.append(struct.pack("B", 255))
-    
-    #parity[3] = struct.pack("B", (sum(upper2dec[3]) + sum(lower2dec[3]))&0x000F)
-    #footer[4] = struct.pack("B", 255)
-    
+
+    # parity[3] = struct.pack("B", (sum(upper2dec[3]) + sum(lower2dec[3]))&0x000F)
+    # footer[4] = struct.pack("B", 255)
+
     return upper2hex, lower2hex, parity, footer
+
 
 if __name__ == '__main__':
     test()
-        

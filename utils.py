@@ -3,7 +3,7 @@ import os
 from settings import *
 
 
-#ファイル名決定
+# ファイル名決定
 def setFilePath(folder):
     file_num = 0
     while True:
@@ -14,26 +14,26 @@ def setFilePath(folder):
     return filename
 
 
-#CSVファイルへの書き込み
+# CSVファイルへの書き込み
 def outputCsvFile(filename, data):
     with open(filename, 'x') as f:
         f.writelines(data)
     print('save > ' + filename)
 
 
-#データ保存先フォルダの確認と作成
+# データ保存先フォルダの確認と作成
 def datasetFolderCheck():
-    #データセット保存先フォルダの確認と作成
+    # データセット保存先フォルダの確認と作成
     if not os.path.exists(DATASET_FOLDER):
         os.makedirs(DATASET_FOLDER)
-    
-    #データセット内クラスフォルダの確認と作成
+
+    # データセット内クラスフォルダの確認と作成
     for l_id in LABEL_NAMES:
         class_folder = os.path.join(DATASET_FOLDER, l_id)
         if not os.path.exists(class_folder):
             os.makedirs(class_folder)
-    
-    #クラスフォルダ内chフォルダの確認と作成
+
+    # クラスフォルダ内chフォルダの確認と作成
     for l_id in LABEL_NAMES:
         for i in range(CH_NUM):
             ch_name = 'ch' + str(i)
