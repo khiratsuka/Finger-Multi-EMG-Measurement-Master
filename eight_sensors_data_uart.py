@@ -4,7 +4,6 @@ import os
 import struct
 import time
 
-import matplotlib.pyplot as plt
 import serial
 
 import recv_test_data
